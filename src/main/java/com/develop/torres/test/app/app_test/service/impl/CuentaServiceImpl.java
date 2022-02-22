@@ -38,7 +38,7 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Transactional
     @Override
-    public void retirar(int cuenta, BigDecimal monto) throws BancoException {
+    public void retirar(Integer cuenta, BigDecimal monto) throws BancoException {
         Optional<CuentaEntity> cuentaOpt = cuentaRepository.findById(cuenta);
         CuentaEntity cuentaEntity = cuentaOpt.orElseThrow(() -> new BancoException("100", "No Existe cuenta con id " + cuenta));
         BigDecimal nuevoSaldo = cuentaEntity.getSaldo().subtract(monto);
@@ -51,7 +51,7 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Transactional
     @Override
-    public void transferir(int cuentaOrigen, int cuentaDestino, BigDecimal monto) throws BancoException {
+    public void transferir(Integer cuentaOrigen, int cuentaDestino, BigDecimal monto) throws BancoException {
         Optional<CuentaEntity> cuentaOpt = cuentaRepository.findById(cuentaDestino);
         CuentaEntity cuentaEntity = cuentaOpt.orElseThrow(() -> new BancoException("100", "No Existe cuenta con id " + cuentaDestino));
         retirar(cuentaOrigen, monto);

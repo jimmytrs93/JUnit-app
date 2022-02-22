@@ -9,7 +9,7 @@ import java.util.List;
 public interface CuentaService {
 
     BigDecimal consultarSaldo(int cuenta);
-    void retirar(int cuenta, BigDecimal monto) throws BancoException;
-    void transferir(int cuentaOrigen, int cuentaDestino, BigDecimal monto) throws BancoException;
+    void retirar(Integer cuenta, BigDecimal monto) throws BancoException;
+    void transferir(Integer cuentaOrigen, int cuentaDestino, BigDecimal monto) throws BancoException;
     List<CuentaDto> cuentasPorUsuario(Integer usuarioId);
 }

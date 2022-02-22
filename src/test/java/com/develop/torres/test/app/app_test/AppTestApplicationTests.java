@@ -45,7 +45,7 @@ class AppTestApplicationTests {
     @BeforeEach
     void setUp() {
         System.out.println("Se llama antes de ejecutar cualquier test");
-        CuentaMapper cuentaMapper = new CuentaMapperImpl();
+        cuentaMapper = new CuentaMapperImpl();
 
         BancoEntity banco = new BancoEntity(1, "Banco pricipal");
         UsuarioEntity usuario = new UsuarioEntity(1, "Juan Perez");
@@ -57,12 +57,13 @@ class AppTestApplicationTests {
         cuentaRepository = mock(CuentaRepository.class);
         //when(cuentaRepository.findById(anyInt())).thenReturn(CuentaOpt);
 
+
         when(cuentaRepository.findById(1)).thenReturn(Cuenta1Opt);
         when(cuentaRepository.findById(2)).thenReturn(Cuenta2Opt);
         List<CuentaEntity> list = Arrays.asList(cuenta1, cuenta2);
         when(cuentaRepository.findAllByUsuarioId(anyInt())).thenReturn(Optional.of(list));
 
-        CuentaEntity cuenta3 = new CuentaEntity(3, "CC", banco, usuario, new BigDecimal("20.123"));
+        CuentaEntity cuenta3 = new CuentaEntity(null, "CC", banco, usuario, new BigDecimal("20.123"));
         when(cuentaRepository.save(any())).thenReturn(cuenta3);
 
         cuentaService = new CuentaServiceImpl(cuentaRepository, cuentaMapper);
@@ -84,6 +85,25 @@ class AppTestApplicationTests {
         });
         //assertEquals("100", be.getCode());
         assertNotEquals("100", be.getCode());
+    }
+
+    @Test
+    void retirarExc() {
+        System.out.println("Test retirarExc");
+        when(cuentaRepository.findById(isNull())).thenThrow(IllegalArgumentException.class);
+
+        Exception e = assertThrows(IllegalArgumentException.class, () -> {
+            cuentaService.retirar(null, new BigDecimal("5.10"));
+        });
+        assertEquals(IllegalArgumentException.class, e.getClass());
+    }
+
+    @Test
+    void retirarArg() throws BancoException {
+        System.out.println("Test retirarArg");
+        cuentaService.retirar(1, new BigDecimal("5.10"));
+        verify(cuentaRepository).findById(eq(1));
+        verify(cuentaRepository).findById(argThat(arg -> arg > 0 && arg.equals(1)));
     }
 
     @Test

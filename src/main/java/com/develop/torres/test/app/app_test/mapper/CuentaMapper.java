@@ -13,3 +13,4 @@ public interface CuentaMapper {
 
     List<CuentaDto> cuentasEntityToCuentasDto(List<CuentaEntity> cuentaEntityList);
 }
+

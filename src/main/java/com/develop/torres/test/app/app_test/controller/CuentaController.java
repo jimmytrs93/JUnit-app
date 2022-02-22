@@ -1,6 +1,5 @@
 package com.develop.torres.test.app.app_test.controller;
 
-import com.develop.torres.test.app.app_test.dto.CuentaDto;
 import com.develop.torres.test.app.app_test.dto.GetCuentasResponseDto;
 import com.develop.torres.test.app.app_test.dto.RetiroRequestDto;
 import com.develop.torres.test.app.app_test.dto.TransferirRequestDto;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RequestMapping("cuenta")
 @RestController

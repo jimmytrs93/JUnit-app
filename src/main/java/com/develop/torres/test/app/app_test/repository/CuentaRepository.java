@@ -12,3 +12,4 @@ public interface CuentaRepository extends JpaRepository<CuentaEntity, Integer> {
 
     Optional<List<CuentaEntity>> findAllByUsuarioId(Integer usuarioId);
 }
+

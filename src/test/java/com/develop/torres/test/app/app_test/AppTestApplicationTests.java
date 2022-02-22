@@ -46,7 +46,6 @@ class AppTestApplicationTests {
     void setUp() {
         System.out.println("Se llama antes de ejecutar cualquier test");
         cuentaMapper = new CuentaMapperImpl();
-
         BancoEntity banco = new BancoEntity(1, "Banco pricipal");
         UsuarioEntity usuario = new UsuarioEntity(1, "Juan Perez");
         CuentaEntity cuenta1 = new CuentaEntity(1, "CA", banco, usuario, new BigDecimal("100.123"));
@@ -56,7 +55,6 @@ class AppTestApplicationTests {
 
         cuentaRepository = mock(CuentaRepository.class);
         //when(cuentaRepository.findById(anyInt())).thenReturn(CuentaOpt);
-
 
         when(cuentaRepository.findById(1)).thenReturn(Cuenta1Opt);
         when(cuentaRepository.findById(2)).thenReturn(Cuenta2Opt);

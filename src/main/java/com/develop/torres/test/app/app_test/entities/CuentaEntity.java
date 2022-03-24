@@ -81,4 +81,5 @@ public class CuentaEntity implements Serializable {
     public void setSaldo(BigDecimal saldo) {
         this.saldo = saldo;
     }
+
 }

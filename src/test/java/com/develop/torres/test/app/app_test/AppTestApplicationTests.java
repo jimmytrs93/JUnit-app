@@ -1,21 +1,18 @@
 package com.develop.torres.test.app.app_test;
 
-import com.develop.torres.test.app.app_test.dto.BancoDto;
 import com.develop.torres.test.app.app_test.dto.CuentaDto;
-import com.develop.torres.test.app.app_test.dto.UsuarioDto;
 import com.develop.torres.test.app.app_test.entities.BancoEntity;
 import com.develop.torres.test.app.app_test.entities.CuentaEntity;
 import com.develop.torres.test.app.app_test.entities.UsuarioEntity;
 import com.develop.torres.test.app.app_test.exceptions.BancoException;
-import com.develop.torres.test.app.app_test.mapper.CuentaMapper;
-import com.develop.torres.test.app.app_test.mapper.CuentaMapperImpl;
-import com.develop.torres.test.app.app_test.repository.BancoRepository;
 import com.develop.torres.test.app.app_test.repository.CuentaRepository;
 import com.develop.torres.test.app.app_test.service.CuentaService;
-import com.develop.torres.test.app.app_test.service.impl.CuentaServiceImpl;
+
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,126 +25,124 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
 @SpringBootTest
 class AppTestApplicationTests {
 
     @MockBean
     CuentaRepository cuentaRepository;
-    @MockBean
-    BancoRepository bancoRepository;
-    @Autowired
-    CuentaMapper cuentaMapper;
     @Autowired
     CuentaService cuentaService;
 
+    @BeforeAll
+    static void beforeAll() {
+        System.out.println("soy beforeAll");
+    }
 
     @BeforeEach
     void setUp() {
-        System.out.println("Se llama antes de ejecutar cualquier test");
-        cuentaMapper = new CuentaMapperImpl();
+        System.out.println("soy BeforeEach");
+
         BancoEntity banco = new BancoEntity(1, "Banco pricipal");
         UsuarioEntity usuario = new UsuarioEntity(1, "Juan Perez");
-        CuentaEntity cuenta1 = new CuentaEntity(1, "CA", banco, usuario, new BigDecimal("100.123"));
-        CuentaEntity cuenta2 = new CuentaEntity(2, "CC", banco, usuario, new BigDecimal("20.123"));
-        Optional<CuentaEntity> Cuenta1Opt = Optional.of(cuenta1);
-        Optional<CuentaEntity> Cuenta2Opt = Optional.of(cuenta2);
+        CuentaEntity cuenta = new CuentaEntity(1, "CA", banco, usuario, new BigDecimal("100.12"));
+        when(cuentaRepository.findById(1)).thenReturn(Optional.of(cuenta));
 
-        cuentaRepository = mock(CuentaRepository.class);
-        //when(cuentaRepository.findById(anyInt())).thenReturn(CuentaOpt);
+        BancoEntity banco2 = new BancoEntity(1, "Banco Alfa");
+        UsuarioEntity usuario2 = new UsuarioEntity(1, "Jorge Muñoz");
+        CuentaEntity cuenta2 = new CuentaEntity(2, "CC", banco2, usuario2, new BigDecimal("50.06"));
+        when(cuentaRepository.findById(2)).thenReturn(Optional.of(cuenta2));
 
-        when(cuentaRepository.findById(1)).thenReturn(Cuenta1Opt);
-        when(cuentaRepository.findById(2)).thenReturn(Cuenta2Opt);
-        List<CuentaEntity> list = Arrays.asList(cuenta1, cuenta2);
-        when(cuentaRepository.findAllByUsuarioId(anyInt())).thenReturn(Optional.of(list));
-
-        CuentaEntity cuenta3 = new CuentaEntity(null, "CC", banco, usuario, new BigDecimal("20.123"));
-        when(cuentaRepository.save(any())).thenReturn(cuenta3);
-
-        cuentaService = new CuentaServiceImpl(cuentaRepository, cuentaMapper);
+        List<CuentaEntity> list2 = Arrays.asList(cuenta, cuenta2);
+        when(cuentaRepository.findAllByUsuarioId(anyInt())).thenReturn(Optional.of(list2));
     }
 
-
     @Test
-    void consultarSaldo() {
-        System.out.println("Test consultarSaldo");
+    void consultarSaldoTest() {
+        System.out.println("soy consultarSaldoTest");
         BigDecimal saldo = cuentaService.consultarSaldo(1);
-        assertEquals(new BigDecimal("100.123"), saldo);
+        assertEquals(new BigDecimal("100.12"), saldo);
     }
 
     @Test
-    void retirar() {
-        System.out.println("Test retirar");
+    void retirarTest() {
+        System.out.println("soy retirarTest");
         BancoException be = assertThrows(BancoException.class, () -> {
-            cuentaService.retirar(2, new BigDecimal("80.10"));
+            cuentaService.retirar(10, new BigDecimal("10"));
         });
-        //assertEquals("100", be.getCode());
-        assertNotEquals("100", be.getCode());
+        assertNotEquals("101", be.getCode());
     }
 
     @Test
-    void retirarExc() {
-        System.out.println("Test retirarExc");
-        when(cuentaRepository.findById(isNull())).thenThrow(IllegalArgumentException.class);
+    void retirarMockTest() throws BancoException {
+        System.out.println("soy retirarMockTest");
+        cuentaService.retirar(1, new BigDecimal("10"));
 
-        Exception e = assertThrows(IllegalArgumentException.class, () -> {
-            cuentaService.retirar(null, new BigDecimal("5.10"));
-        });
-        assertEquals(IllegalArgumentException.class, e.getClass());
-    }
-
-    @Test
-    void retirarArg() throws BancoException {
-        System.out.println("Test retirarArg");
-        cuentaService.retirar(1, new BigDecimal("5.10"));
         verify(cuentaRepository).findById(eq(1));
-        verify(cuentaRepository).findById(argThat(arg -> arg > 0 && arg.equals(1)));
+        verify(cuentaRepository).findById(argThat(arg -> arg > 0 && arg < 10));
     }
 
     @Test
-    void transferirError() {
-        System.out.println("Test transferirError");
-        BancoException be = assertThrows(BancoException.class, () -> {
-            cuentaService.transferir(2, 1, new BigDecimal("80.10"));
+    void retirarCaptorTest() throws BancoException {
+        System.out.println("soy retirarCaptorTest");
+        cuentaService.retirar(1, new BigDecimal("10"));
+
+        ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+        verify(cuentaRepository).findById(captor.capture());
+
+        assertEquals(1, captor.getValue());
+    }
+
+    @Test
+    void retirarExcTest() {
+        System.out.println("soy retirarExcTest");
+        when(cuentaRepository.findById(isNull())).thenThrow(NullPointerException.class);
+
+        Exception e = assertThrows( NullPointerException.class, () -> {
+            cuentaService.retirar(null, new BigDecimal("10"));
         });
-        assertTrue("101".equals(be.getCode()));
+
+        assertEquals(NullPointerException.class, e.getClass());
+        assertTrue(e.getClass().equals(NullPointerException.class));
     }
 
     @Test
-    void transferirErrorVerify() {
-        System.out.println("Test transferirErrorVerify");
+    void transferirTest() {
+        System.out.println("soy transferirTest");
         assertThrows(BancoException.class, () -> {
-            cuentaService.transferir(1, 3, new BigDecimal("1000.10"));
+            cuentaService.transferir(1,3, new BigDecimal("10"));
         });
+
         verify(cuentaRepository, times(1)).findById(anyInt());
         verify(cuentaRepository, never()).save(any());
     }
 
     @Test
-    void transferirOk() throws BancoException {
-        System.out.println("Test transferirOk");
-        cuentaService.transferir(1, 2, new BigDecimal("10.10"));
+    void transferirOkTest() throws BancoException {
+        System.out.println("soy transferirOkTest");
+
+        cuentaService.transferir(1,2, new BigDecimal("10"));
+        verify(cuentaRepository, times(1)).findById(1);
         verify(cuentaRepository, times(2)).findById(anyInt());
-        verify(cuentaRepository, times(2)).save(any());
     }
 
     @Test
-    void cuentasPorUsuario() {
-        System.out.println("Test cuentasPorUsuario");
+    void cuentasPorUsuarioTest() {
+        System.out.println("soy cuentasPorUsuarioTest");
         List<CuentaDto> list = cuentaService.cuentasPorUsuario(1);
-        BancoDto banco = new BancoDto(1, "Banco pricipal");
-        UsuarioDto usuario = new UsuarioDto(1, "Juan Perez");
-        CuentaDto cuenta1 = new CuentaDto(1, "CA", banco, usuario, new BigDecimal("100.123"));
 
-        // AsertAll ejecuta todas las pruebas sin importar que alguna falle
+        BancoEntity banco = new BancoEntity(1, "Banco pricipal");
+        UsuarioEntity usuario = new UsuarioEntity(1, "Juan Perez");
+        CuentaEntity cuenta = new CuentaEntity(1, "CA", banco, usuario, new BigDecimal("100.12"));
+
+
         assertAll(() -> assertEquals(2, list.size()),
-                //() -> assertSame(cuenta1, list.get(0)), // No son iguales por que son instancias diferentes
-                () -> assertEquals(cuenta1.getId(), list.get(0).getId()),
-                () -> verify(cuentaRepository, times(1)).findAllByUsuarioId(anyInt())); // Se llama solo una vez
+                //() -> assertSame(cuenta, list.get(0)),
+                //() -> assertEquals(3, list.size()),
+                () -> assertEquals(1, list.get(0).getId()));
     }
 
     @AfterAll
     static void afterAll() {
-        System.out.println("Se llama al terminar los test");
+        System.out.println("soy afterAll");
     }
 }
